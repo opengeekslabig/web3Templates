@@ -1,0 +1,29 @@
+.container{
+  width: 100%;
+  padding: 100px;
+  .walletData{
+    display: flex;
+    justify-content: space-between;
+
+    padding: 0 100px;
+    .chainData{
+
+    }
+    .wallet{
+
+    }
+
+  }
+  .controlContainer{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    .connectButton{
+      cursor: pointer;
+      color: black;
+      background-color: #61dafb;
+      padding: 10px 30px;
+      border-radius: 5px;
+    }
+  }
+}
