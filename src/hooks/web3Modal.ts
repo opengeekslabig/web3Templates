@@ -1,7 +1,7 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from 'web3modal';
 import {useCallback, useEffect, useState} from "react";
-import {providers, Contract} from "ethers";
+import {providers, Contract, utils,BigNumber} from "ethers";
 import {getChainData} from "../utils/chainHelpers";
 import {contractConfig} from "../config/const";
 
@@ -26,6 +26,7 @@ if (typeof window !== 'undefined') {
 }
 
 type StateType = {
+    signer: any,
     provider?: any,
     web3Provider?: any,
     address?: string | null,
@@ -34,6 +35,7 @@ type StateType = {
 }
 
 const initialState: StateType = {
+    signer: null,
     provider: null,
     web3Provider: null,
     address: null,
@@ -41,20 +43,26 @@ const initialState: StateType = {
     error: 'connect your wallet'
 }
 
+interface IContractState {
+    contract: any;
+    privateMethods: any | null;
+    publicMethods: any | null;
+}
+
 export function useWeb3Modal () {
     const [state, setState] = useState<StateType>(initialState);
-    const [currentContract, setCurrentContract] = useState({});
+    const [mintData, setMintData] = useState<any>({});
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [currentContract, setCurrentContract] = useState<IContractState>({
+        contract: null,
+        privateMethods: null,
+        publicMethods: null,
+    });
     const { provider, web3Provider, address, chainId ,error } = state;
 
     const connect = useCallback(async function () {
         let error = null;
-        // This is the initial `provider` that is returned when
-        // using web3Modal to connect. Can be MetaMask or WalletConnect.
         const provider = await web3Modal.connect()
-
-        // We plug the initial `provider` into ethers.js and get back
-        // a Web3Provider. This will add on methods from ethers.js and
-        // event listeners such as `.on()` will be different.
         const web3Provider = new providers.Web3Provider(provider)
         if(!web3Provider) error = 'wallet connect error';
 
@@ -63,11 +71,9 @@ export function useWeb3Modal () {
 
         const network = await web3Provider.getNetwork()
         if(network.chainId!==contractConfig.chainId) error = 'select Ethereum network';
-        if(!error){
-            await getContract(web3Provider);
-        }
 
         setState({
+            signer,
             provider,
             web3Provider,
             address,
@@ -88,10 +94,66 @@ export function useWeb3Modal () {
         [provider]
     )
 
-    const getContract = async (web3Provider: any) =>{
-        if(web3Provider){
-            const contract = new Contract(contractConfig.address, contractConfig.abi, web3Provider);
-            setCurrentContract({...currentContract, contract})
+    useEffect(()=>{
+        if(state.web3Provider && state.address && !error){
+            getContract().then()
+        }
+    },[state.web3Provider,state.address]);
+
+    useEffect(()=>{
+        if(currentContract.publicMethods){
+            checkContractPermissions();
+        }
+
+    },[currentContract.publicMethods])
+
+    const checkContractPermissions = () =>{
+        const now = (Date.now()/1000).toFixed(0);
+        if(currentContract.publicMethods?.paused){
+            setState({...state, error: 'contract paused'})
+            return ;
+        }
+        if(now<currentContract.publicMethods?.preSaleStart){
+            setState({...state, error: 'presale coming soon'})
+            return ;
+        }
+        if(currentContract.publicMethods?.preSaleStart<now &&
+            now<currentContract.publicMethods?.publicSaleStart){
+            if(currentContract.privateMethods?.balanceOf>=currentContract.publicMethods?.maxPreSaleMintAmount){
+                setState({...state, error: 'you mint all presale nft'})
+                return ;
+            }
+            setMintData({
+                max:currentContract.publicMethods?.maxPreSaleMintAmount-currentContract.privateMethods?.balanceOf,
+                cost: currentContract.publicMethods?.preSaleCost,
+            })
+        }
+        if(currentContract.publicMethods?.publicSaleStart<now){
+            if(currentContract.privateMethods?.balanceOf>=currentContract.publicMethods?.maxMintAmount){
+                setState({...state, error: 'you mint all nft'})
+                return ;
+            }
+            setMintData({
+                max:currentContract.publicMethods?.maxMintAmount-currentContract.privateMethods?.balanceOf,
+                cost: currentContract.publicMethods?.publicSaleCost,
+            })
+        }
+    }
+
+    const getContract = async () =>{
+            let newState: any = {};
+            const contract = new Contract(contractConfig.address, contractConfig.abi, state?.signer);
+            newState = {...newState,contract}
+
+                await Promise.all(
+                    contractConfig.privateMethods.map(async el=>(
+                        await contract[el](address)
+                    ))
+                ).then(res=>{
+                    const data: any = {};
+                    contractConfig.privateMethods.forEach((el,i)=>data[el]=utils.formatUnits(res[i],0))
+                    newState = {...newState, privateMethods: data}
+                });
 
             await Promise.all(
                 contractConfig.publicMethods.map(async el=>(
@@ -99,25 +161,35 @@ export function useWeb3Modal () {
                 ))
             ).then(res=>{
                 const data: any = {};
-                contractConfig.publicMethods.forEach((el,i)=>data[el]=res[i].toNumber())
-                setCurrentContract({...currentContract, publicMethods: data})
+                contractConfig.publicMethods.forEach(
+                    (el,i)=>data[el]=res[i]._isBigNumber ?
+                        utils.formatUnits(res[i],0) :
+                        res[i])
+                newState = {...newState, publicMethods: data}
             });
-            if(address){
-                await Promise.all(
-                    contractConfig.privateMethods.map(async el=>(
-                        await contract[el](address)
-                    ))
-                ).then(res=>{
-                    const data: any = {};
-                    contractConfig.privateMethods.forEach((el,i)=>data[el]=res[i].toNumber())
-                    setCurrentContract({...currentContract, privateMethods: data})
-                });
-            }
-
-        }
+            setCurrentContract(newState);
     }
 
+    const Mint = async (value: number) =>{
+        //console.log(BigNumber.from(BigInt(value*mintData?.cost)))
+        const gas = await currentContract?.contract?.estimateGas.mint(1,{value: utils.parseEther('0.01')});
 
+        //const tx = await currentContract?.contract?.mint(value,{value: utils.parseUnits((value*mintData?.cost).toString(),18)})
+        //console.log(tx)
+        //console.log(BigNumber.from(value*mintData?.cost))
+        // setIsLoading(true)
+        // currentContract.contract.mint({
+        //     from: state.address,
+        //     value: utils.parseUnits((value*mintData?.cost).toString(),18)
+        // }).then((e: any)=>{
+        //     console.log(e);
+        //     setIsLoading(false);
+        // }).catch((e:any)=> {
+        //         console.log(e);
+        //         setIsLoading(false);
+        //     }
+        // );
+    }
 
     // useEffect(()=>{
     //     if (typeof window !== 'undefined') {
@@ -175,6 +247,8 @@ export function useWeb3Modal () {
       connect,
       disconnect,
       error,
-      currentContract,
+      mintData,
+      Mint,
+      isLoading
   };
 };

@@ -1,6 +1,6 @@
 export const contractConfig = {
-    chainId: 3,
-    address: '0x636B07Ab0C6970B341690dAdE730E141e86675dA',
+    chainId: 1,
+    address: '0x3A18AeB8898A985Ca8444b43a3496b74c030eE78',
     publicMethods: [
         'preSaleCost',
         'publicSaleCost',
@@ -10,6 +10,8 @@ export const contractConfig = {
         'maxPreSale',
         'preSaleStart',
         'publicSaleStart',
+        'paused',
+        'totalSupply'
     ],
     privateMethods: [
         'balanceOf',

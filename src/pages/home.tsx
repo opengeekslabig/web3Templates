@@ -13,7 +13,7 @@ const Home: React.FC<Props> = (props) => {
         connect,
         disconnect
     } = useWeb3Modal();
-    console.log(chainData)
+
   return <>
       <div className={styles.container}>
           <div className={styles.walletData}>

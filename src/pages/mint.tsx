@@ -10,6 +10,7 @@ import { useWeb3Modal } from "../hooks/web3Modal";
 
 const Mint: React.FC = () => {
     const [errorMsg,setErrorMsg] = useState<string | null>(null);
+    const [amount, setAmount] = useState(0);
 
     const {
         chainData,
@@ -17,9 +18,19 @@ const Mint: React.FC = () => {
         connect,
         disconnect,
         error,
-        currentContract
+        mintData,
+        Mint,
+        isLoading
     } = useWeb3Modal();
-console.log(currentContract);
+
+    // useEffect(()=>{
+    //     if(currentContract){
+    //         console.log(currentContract);
+    //         console.log(currentContract?.publicMethods);
+    //         console.log(currentContract?.privateMethods);
+    //     }
+    // },[currentContract])
+
     useEffect(()=>{
         if(error){
             setErrorMsg(error)
@@ -28,10 +39,24 @@ console.log(currentContract);
         }
     },[error])
 
+    const inputHandler = (e: any) =>{
+        if(Number(e?.target?.value)<0){
+            setAmount(0)
+            return ;
+        } else {
+            if(Number(e?.target?.value)>mintData?.max){
+                setAmount(mintData?.max)
+                return ;
+            }
+        }
+        setAmount(+e?.target?.value)
+    }
+
 
 
     const mintHandle = () =>{
-        if(!errorMsg){
+        if(!errorMsg && amount>0){
+            //Mint(amount)
             console.log('mint');
         }
     }
@@ -53,8 +78,10 @@ console.log(currentContract);
                         Simply click the button below to mint your punk directly into your wallet.
                     </div>
                     <div className={styles.mintControl}>
-                        <input className={styles.input} type="number"/>
-                        <div className={styles.button} onClick={mintHandle}>MINT YOUR PUNK <img className={styles.arrow} src={arrow} /></div>
+                        <input value={amount} className={styles.input} type="number" onInput={inputHandler} disabled={!!error}/>
+                        <div className={styles.button} onClick={mintHandle}>MINT YOUR PUNK
+                            <img className={styles.arrow} src={arrow} />
+                        </div>
                     </div>
                     <div className={styles.error}>{errorMsg}</div>
 

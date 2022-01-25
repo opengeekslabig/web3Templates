@@ -2,16 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5da6301c-1047-43aa-ae79-a0f2997da4d2" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/hooks/web3Modal.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pages/home.module.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pages/home.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/chainHelpers.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/chains.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config/const.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/const.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/hooks/web3Modal.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/web3Modal.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/home.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/mint.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/mint.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/mint.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/mint.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,6 +17,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="2432rW3joBm4MgCHG6F9vpkjVBc" />
@@ -47,6 +50,8 @@
       <option name="presentableId" value="Default" />
       <updated>1642845149086</updated>
       <workItem from="1642845150302" duration="7550000" />
+      <workItem from="1642967520316" duration="105000" />
+      <workItem from="1643137734404" duration="11862000" />
     </task>
     <servers />
   </component>
@@ -63,5 +68,18 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/config/const.ts</url>
+          <line>18</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
