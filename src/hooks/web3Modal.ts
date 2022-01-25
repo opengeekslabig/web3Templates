@@ -1,8 +1,9 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from 'web3modal';
 import {useCallback, useEffect, useState} from "react";
-import {providers} from "ethers";
+import {providers, Contract} from "ethers";
 import {getChainData} from "../utils/chainHelpers";
+import {contractConfig} from "../config/const";
 
 const INFURA_ID = '460f40a260564ac4a4f4b3fffb032dad'
 
@@ -25,10 +26,11 @@ if (typeof window !== 'undefined') {
 }
 
 type StateType = {
-    provider?: any
-    web3Provider?: any
-    address?: string | null
-    chainId?: number
+    provider?: any,
+    web3Provider?: any,
+    address?: string | null,
+    chainId?: number,
+    error: string | null,
 }
 
 const initialState: StateType = {
@@ -36,13 +38,16 @@ const initialState: StateType = {
     web3Provider: null,
     address: null,
     chainId: undefined,
+    error: 'connect your wallet'
 }
 
 export function useWeb3Modal () {
     const [state, setState] = useState<StateType>(initialState);
-    const { provider, web3Provider, address, chainId } = state;
+    const [currentContract, setCurrentContract] = useState({});
+    const { provider, web3Provider, address, chainId ,error } = state;
 
     const connect = useCallback(async function () {
+        let error = null;
         // This is the initial `provider` that is returned when
         // using web3Modal to connect. Can be MetaMask or WalletConnect.
         const provider = await web3Modal.connect()
@@ -51,17 +56,23 @@ export function useWeb3Modal () {
         // a Web3Provider. This will add on methods from ethers.js and
         // event listeners such as `.on()` will be different.
         const web3Provider = new providers.Web3Provider(provider)
+        if(!web3Provider) error = 'wallet connect error';
 
         const signer = web3Provider.getSigner()
         const address = await signer.getAddress()
 
         const network = await web3Provider.getNetwork()
+        if(network.chainId!==contractConfig.chainId) error = 'select Ethereum network';
+        if(!error){
+            await getContract(web3Provider);
+        }
 
         setState({
             provider,
             web3Provider,
             address,
             chainId: network.chainId,
+            error
         })
 
     }, [])
@@ -76,6 +87,37 @@ export function useWeb3Modal () {
         },
         [provider]
     )
+
+    const getContract = async (web3Provider: any) =>{
+        if(web3Provider){
+            const contract = new Contract(contractConfig.address, contractConfig.abi, web3Provider);
+            setCurrentContract({...currentContract, contract})
+
+            await Promise.all(
+                contractConfig.publicMethods.map(async el=>(
+                    await contract[el]()
+                ))
+            ).then(res=>{
+                const data: any = {};
+                contractConfig.publicMethods.forEach((el,i)=>data[el]=res[i].toNumber())
+                setCurrentContract({...currentContract, publicMethods: data})
+            });
+            if(address){
+                await Promise.all(
+                    contractConfig.privateMethods.map(async el=>(
+                        await contract[el](address)
+                    ))
+                ).then(res=>{
+                    const data: any = {};
+                    contractConfig.privateMethods.forEach((el,i)=>data[el]=res[i].toNumber())
+                    setCurrentContract({...currentContract, privateMethods: data})
+                });
+            }
+
+        }
+    }
+
+
 
     // useEffect(()=>{
     //     if (typeof window !== 'undefined') {
@@ -96,8 +138,6 @@ export function useWeb3Modal () {
     useEffect(() => {
         if (provider?.on) {
             const handleAccountsChanged = (accounts: string[]) => {
-                // eslint-disable-next-line no-console
-                console.log('accountsChanged', accounts)
                 setState({
                     ...state,
                     address: accounts[0],
@@ -110,8 +150,6 @@ export function useWeb3Modal () {
             }
 
             const handleDisconnect = (error: { code: number; message: string }) => {
-                // eslint-disable-next-line no-console
-                console.log('disconnect', error)
                 disconnect().then()
             }
 
@@ -135,6 +173,8 @@ export function useWeb3Modal () {
       chainData,
       address,
       connect,
-      disconnect
+      disconnect,
+      error,
+      currentContract,
   };
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import styles from './mint.module.scss'
 import arrow from '../asset/img/arrow-right.svg'
 import img1 from '../asset/img/1.png'
@@ -9,12 +9,32 @@ import { useWeb3Modal } from "../hooks/web3Modal";
 
 
 const Mint: React.FC = () => {
+    const [errorMsg,setErrorMsg] = useState<string | null>(null);
+
     const {
         chainData,
         address,
         connect,
-        disconnect
+        disconnect,
+        error,
+        currentContract
     } = useWeb3Modal();
+console.log(currentContract);
+    useEffect(()=>{
+        if(error){
+            setErrorMsg(error)
+        } else {
+            setErrorMsg(null)
+        }
+    },[error])
+
+
+
+    const mintHandle = () =>{
+        if(!errorMsg){
+            console.log('mint');
+        }
+    }
 
     return <>
         <div className={styles.container}>
@@ -34,8 +54,9 @@ const Mint: React.FC = () => {
                     </div>
                     <div className={styles.mintControl}>
                         <input className={styles.input} type="number"/>
-                        <div className={styles.button}>MINT YOUR PUNK <img className={styles.arrow} src={arrow} /></div>
+                        <div className={styles.button} onClick={mintHandle}>MINT YOUR PUNK <img className={styles.arrow} src={arrow} /></div>
                     </div>
+                    <div className={styles.error}>{errorMsg}</div>
 
                 </div>
                 <div className={styles.pics}>
