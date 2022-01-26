@@ -13,7 +13,7 @@ const Mint: React.FC = () => {
     const [amount, setAmount] = useState(0);
 
     const {
-        chainData,
+        //chainData,
         address,
         connect,
         disconnect,
@@ -22,14 +22,6 @@ const Mint: React.FC = () => {
         Mint,
         isLoading
     } = useWeb3Modal();
-
-    // useEffect(()=>{
-    //     if(currentContract){
-    //         console.log(currentContract);
-    //         console.log(currentContract?.publicMethods);
-    //         console.log(currentContract?.privateMethods);
-    //     }
-    // },[currentContract])
 
     useEffect(()=>{
         if(error){
@@ -52,17 +44,16 @@ const Mint: React.FC = () => {
         setAmount(+e?.target?.value)
     }
 
-
-
     const mintHandle = () =>{
         if(!errorMsg && amount>0){
-            //Mint(amount)
-            console.log('mint');
+            Mint(amount).then(e=>setAmount(0))
         }
     }
 
     return <>
         <div className={styles.container}>
+            {isLoading && <div className={styles.spinner}>
+                <div className={styles.loader}>Loading...</div></div>}
             <div className={styles.wrapper}>
                 <div className={styles.description}>
                     <div className={styles.connectButton} onClick={address ? disconnect : connect}>
@@ -80,7 +71,7 @@ const Mint: React.FC = () => {
                     <div className={styles.mintControl}>
                         <input value={amount} className={styles.input} type="number" onInput={inputHandler} disabled={!!error}/>
                         <div className={styles.button} onClick={mintHandle}>MINT YOUR PUNK
-                            <img className={styles.arrow} src={arrow} />
+                            <img className={styles.arrow} src={arrow} alt='arrow'/>
                         </div>
                     </div>
                     <div className={styles.error}>{errorMsg}</div>
