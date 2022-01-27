@@ -1,8 +1,9 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from 'web3modal';
 import {useCallback, useEffect, useState} from "react";
-import {providers} from "ethers";
+import Web3 from 'web3'
 import {getChainData} from "../utils/chainHelpers";
+import supportedChains from "../utils/chains";
 
 const INFURA_ID = '460f40a260564ac4a4f4b3fffb032dad'
 
@@ -27,8 +28,9 @@ if (typeof window !== 'undefined') {
 type StateType = {
     provider?: any
     web3Provider?: any
-    address?: string | null
-    chainId?: number
+    address: string | null
+    chainId?: number,
+    error: string | null,
 }
 
 const initialState: StateType = {
@@ -36,35 +38,41 @@ const initialState: StateType = {
     web3Provider: null,
     address: null,
     chainId: undefined,
+    error: 'Connect wallet',
 }
 
-export function useWeb3Modal () {
+export function useWeb3Modal (networkId?: number) {
     const [state, setState] = useState<StateType>(initialState);
-    const { provider, web3Provider, address, chainId } = state;
+    const { provider, web3Provider, address, chainId, error} = state;
+    const [modalError, setModalError] = useState<string | null>(null);
 
     const connect = useCallback(async function () {
-        // This is the initial `provider` that is returned when
-        // using web3Modal to connect. Can be MetaMask or WalletConnect.
-        const provider = await web3Modal.connect()
+        try{
+            let error = null;
+            const provider = await web3Modal.connect()
+            const web3Provider = new Web3(provider);
+            const address = provider.selectedAddress;
+            const network = await web3Provider.eth.net.getId()
+            if(networkId && network!==networkId){
+               const chainName = supportedChains.find(el=>el.chain_id===networkId)?.name ?? 'correct';
+                error = `Select ${chainName} network`;
+            }
 
-        // We plug the initial `provider` into ethers.js and get back
-        // a Web3Provider. This will add on methods from ethers.js and
-        // event listeners such as `.on()` will be different.
-        const web3Provider = new providers.Web3Provider(provider)
+            setState({
+                provider,
+                web3Provider,
+                address,
+                chainId: network,
+                error
+            })
+        } catch (e) {
+            setModalError('Could not get a wallet connection')
+            console.log("Could not get a wallet connection", e);
+            return;
+        }
 
-        const signer = web3Provider.getSigner()
-        const address = await signer.getAddress()
 
-        const network = await web3Provider.getNetwork()
-
-        setState({
-            provider,
-            web3Provider,
-            address,
-            chainId: network.chainId,
-        })
-
-    }, [])
+    }, [networkId])
 
     const disconnect = useCallback(
         async function () {
@@ -77,16 +85,6 @@ export function useWeb3Modal () {
         [provider]
     )
 
-    // useEffect(()=>{
-    //     if (typeof window !== 'undefined') {
-    //         setWeb3Modal(new Web3Modal({
-    //             network: 'mainnet', // optional
-    //             cacheProvider: true,
-    //             providerOptions, // required
-    //         }))
-    //     }
-    // },[])
-
     useEffect(() => {
         if (web3Modal.cachedProvider) {
             connect().then()
@@ -96,22 +94,22 @@ export function useWeb3Modal () {
     useEffect(() => {
         if (provider?.on) {
             const handleAccountsChanged = (accounts: string[]) => {
-                // eslint-disable-next-line no-console
-                console.log('accountsChanged', accounts)
-                setState({
-                    ...state,
-                    address: accounts[0],
-                })
+                if(accounts[0]){
+                    setState((s)=>({
+                        ...s,
+                        address: accounts[0],
+                    }))
+                } else {
+                    disconnect().then()
+                    window.location.reload()
+                }
             }
 
-            // https://docs.ethers.io/v5/concepts/best-practices/#best-practices--network-changes
             const handleChainChanged = (_hexChainId: string) => {
                 window.location.reload()
             }
 
             const handleDisconnect = (error: { code: number; message: string }) => {
-                // eslint-disable-next-line no-console
-                console.log('disconnect', error)
                 disconnect().then()
             }
 
@@ -131,10 +129,14 @@ export function useWeb3Modal () {
     }, [provider, disconnect])
 
     const chainData = getChainData(chainId)
-  return {
+    return {
       chainData,
       address,
       connect,
-      disconnect
+      disconnect,
+      web3Provider,
+      error,
+      modalError,
+      setModalError,
   };
-};
+}

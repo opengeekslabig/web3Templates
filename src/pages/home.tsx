@@ -1,6 +1,8 @@
 import React from "react";
 import styles from './home.module.scss'
 import { useWeb3Modal } from "../hooks/web3Modal";
+import {useContract} from "../hooks/useContract";
+import {contractConfig} from "../config/const";
 
 interface Props {
   props?: any;
@@ -11,9 +13,18 @@ const Home: React.FC<Props> = (props) => {
         chainData,
         address,
         connect,
-        disconnect
-    } = useWeb3Modal();
-    console.log(chainData)
+        disconnect,
+        modalError,
+        web3Provider,
+        error,
+        setModalError
+    } = useWeb3Modal(contractConfig.chainId);
+    const {currentContract} = useContract(web3Provider,address,!error);
+    // console.log(test);
+    // console.log(error);
+    // console.log(modalError);
+    console.log(currentContract);
+console.log('render');
   return <>
       <div className={styles.container}>
           <div className={styles.walletData}>
@@ -29,6 +40,8 @@ const Home: React.FC<Props> = (props) => {
                     {address ? "DISCONNECT":"CONNECT"}
                 </div>
             </div>
+          {modalError && <div className="modal" onClick={()=>setModalError(null)}>{modalError}</div>}
+
       </div>
   </>;
 };
