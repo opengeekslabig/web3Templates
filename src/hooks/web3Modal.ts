@@ -1,11 +1,11 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from 'web3modal';
 import {useCallback, useEffect, useState} from "react";
-import Web3 from 'web3'
+import Web3 from 'web3';
 import {getChainData} from "../utils/chainHelpers";
 import supportedChains from "../utils/chains";
 
-const INFURA_ID = '460f40a260564ac4a4f4b3fffb032dad'
+const INFURA_ID = '460f40a260564ac4a4f4b3fffb032dad';
 
 const providerOptions = {
     walletconnect: {
@@ -41,7 +41,7 @@ const initialState: StateType = {
     error: 'Connect wallet',
 }
 
-export function useWeb3Modal (networkId?: number) {
+export const useWeb3Modal = (networkId?: number) => {
     const [state, setState] = useState<StateType>(initialState);
     const { provider, web3Provider, address, chainId, error} = state;
     const [modalError, setModalError] = useState<string | null>(null);
@@ -52,9 +52,10 @@ export function useWeb3Modal (networkId?: number) {
             const provider = await web3Modal.connect()
             const web3Provider = new Web3(provider);
             const address = provider.selectedAddress;
-            const network = await web3Provider.eth.net.getId()
+            const balance = await web3Provider.eth.getBalance(address);
+            const network = await web3Provider.eth.net.getId();
             if(networkId && network!==networkId){
-               const chainName = supportedChains.find(el=>el.chain_id===networkId)?.name ?? 'correct';
+                const chainName = supportedChains.find(el=>el.chain_id===networkId)?.name ?? 'correct';
                 error = `Select ${chainName} network`;
             }
 
@@ -80,7 +81,7 @@ export function useWeb3Modal (networkId?: number) {
             if (provider?.disconnect && typeof provider.disconnect === 'function') {
                 await provider.disconnect()
             }
-       setState(initialState)
+            setState(initialState)
         },
         [provider]
     )
@@ -128,15 +129,16 @@ export function useWeb3Modal (networkId?: number) {
         }
     }, [provider, disconnect])
 
-    const chainData = getChainData(chainId)
+    const chainData = getChainData(chainId);
+
     return {
-      chainData,
-      address,
-      connect,
-      disconnect,
-      web3Provider,
-      error,
-      modalError,
-      setModalError,
-  };
-}
+        chainData,
+        address,
+        connect,
+        disconnect,
+        web3Provider,
+        error,
+        modalError,
+        setModalError,
+    };
+};
