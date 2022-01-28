@@ -1,6 +1,6 @@
 export const contractConfig = {
-    chainId: 1,
-    address: '0x3A18AeB8898A985Ca8444b43a3496b74c030eE78',
+    chainId: 3,
+    address: '0x8cF0abB6344c86A60ecF359D21BE27133e5E29Ce',
     publicMethods: [
         'preSaleCost',
         'publicSaleCost',

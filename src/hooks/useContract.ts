@@ -31,7 +31,7 @@ export function useContract (web3Provider: any, address: string | null, isEnable
                 ))
             ).then(res=>{
                 const data: any = {};
-                contractConfig.privateMethods.forEach((el,i)=>data[el]=res[i])
+                contractConfig.privateMethods.forEach((el,i)=>data[el]=((typeof(res[i] ) !=='boolean' )) ? Number(res[i]) : res[i])
                 newState = {...newState, privateMethods: data}
             });
 
@@ -42,7 +42,7 @@ export function useContract (web3Provider: any, address: string | null, isEnable
             ).then(res=>{
                 const data: any = {};
                 contractConfig.publicMethods.forEach(
-                    (el,i)=>data[el]=res[i])
+                    (el,i)=>data[el]=((typeof(res[i] ) !=='boolean' )) ? Number(res[i]) : res[i])
                 newState = {...newState, publicMethods: data}
             });
             setCurrentContract(c=>({...c,...newState}));
@@ -54,18 +54,23 @@ export function useContract (web3Provider: any, address: string | null, isEnable
 
     const mint = useCallback(async (value: number)=>{
         console.log(mint);
-        // setIsLoading(true);
-        // await contract?.methods?.mint(value)
-        //     .send({from: address, value: value * mintData?.cost})
+        setIsLoading(true);
+        // await currentContract.contract?.methods?.mint(value)
+        //     .send({
+        //         from: address,
+        //         to: contractConfig.address,
+        //         value: value * mintData?.cost,
+        //         gasLimit: contractConfig.gasLimit*value,
+        //     })
         //     .on('receipt', function(receipt:any){
-        //         getContractData(contract).then()
+        //         getContractData(currentContract.contract).then()
         //         setIsLoading(false);
         //     })
         //     .on('error', function(error: any, receipt: any) {
         //         if(error.code && error.code===4001){
-        //             setContractModalError('User denied transaction signature.')
+        //             setModalError('User denied transaction signature.')
         //         } else {
-        //             setContractModalError('Contract connection error')
+        //             setModalError('Contract connection error')
         //         }
         //         setIsLoading(false);
         //     });

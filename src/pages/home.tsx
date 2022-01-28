@@ -4,11 +4,8 @@ import { useWeb3Modal } from "../hooks/web3Modal";
 import {useContract} from "../hooks/useContract";
 import {contractConfig} from "../config/const";
 
-interface Props {
-  props?: any;
-}
 
-const Home: React.FC<Props> = (props) => {
+const Home: React.FC = () => {
     const {
         chainData,
         address,
@@ -21,8 +18,8 @@ const Home: React.FC<Props> = (props) => {
     } = useWeb3Modal(contractConfig.chainId);
     const {currentContract} = useContract(web3Provider,address,!error);
     // console.log(test);
-    // console.log(error);
-    // console.log(modalError);
+    console.log(error);
+    console.log(modalError);
     console.log(currentContract);
 console.log('render');
   return <>
