@@ -52,6 +52,15 @@ export function useContract (web3Provider: any, address: string | null, isEnable
         }
     },[address])
 
+    const getEvents = async () =>{
+        if(contract){
+            await contract.getPastEvents('OwnershipTransferred',{
+                fromBlock: 0,
+                toBlock: 'latest'
+            },(err:any,res:any)=>console.log('res',res))
+        }
+    }
+
     const mint = useCallback(async (value: number)=>{
         console.log(mint);
         setIsLoading(true);
@@ -91,6 +100,7 @@ export function useContract (web3Provider: any, address: string | null, isEnable
         contractModalError,
         setContractModalError,
         isLoading,
-        mint
+        mint,
+        getEvents
     };
 }

@@ -16,12 +16,19 @@ const Home: React.FC = () => {
         error,
         setModalError
     } = useWeb3Modal(contractConfig.chainId);
-    const {currentContract} = useContract(web3Provider,address,!error);
+    const {
+        currentContract,
+        getEvents
+    } = useContract(web3Provider,address,!error);
     // console.log(test);
-    console.log(error);
-    console.log(modalError);
-    console.log(currentContract);
-console.log('render');
+//     console.log(error);
+//     console.log(modalError);
+//     console.log(currentContract);
+// console.log('render');
+
+const getEventsHandler = () =>{
+    getEvents().then(e=>console.log('get'))
+}
   return <>
       <div className={styles.container}>
           <div className={styles.walletData}>
@@ -35,6 +42,9 @@ console.log('render');
             <div className={styles.controlContainer}>
                 <div className={styles.connectButton} onClick={address ? disconnect : connect}>
                     {address ? "DISCONNECT":"CONNECT"}
+                </div>
+                <div className={styles.connectButton} onClick={getEventsHandler}>
+                    get events
                 </div>
             </div>
           {modalError && <div className="modal" onClick={()=>setModalError(null)}>{modalError}</div>}
